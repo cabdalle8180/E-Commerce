@@ -1,9 +1,12 @@
-import { ShoppingCart, Search, Menu, Heart, X, LogIn, UserPlus } from 'lucide-react';
+import { ShoppingCart, Search, Menu, Heart, X, LogIn, UserPlus, User } from 'lucide-react';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { userInfo } = useSelector((state) => state.user);
 
   return (
     <header className="w-full bg-white shadow-sm sticky top-0 z-50">
@@ -44,12 +47,16 @@ function Header() {
             
             {/* Login/Register Buttons - Desktop */}
             <div className="hidden lg:flex items-center border-r pr-6 gap-4">
-              {/* <Link to="/login" className="text-xs font-bold text-gray-600 hover:text-indigo-600 transition-colors uppercase tracking-tight">
-                Log In
-              </Link> */}
-              <Link to="/login" className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-all active:scale-95">
-                Log In
-              </Link>
+             
+              {userInfo ? (
+                <Link to="/profile" className="flex items-center gap-2 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+                  <User className="w-4 h-4" /> My Account
+                </Link>
+              ) : (
+                <Link to="/login" className="flex items-center gap-2 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+                  <LogIn className="w-4 h-4" /> Log In
+                </Link>
+              )}
             </div>
 
             {/* Icons */}
@@ -90,12 +97,16 @@ function Header() {
 
           {/* Auth for Mobile */}
           <div className="grid grid-cols-2 gap-3 mb-8">
-            <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 py-3 bg-gray-50 text-gray-700 rounded-xl text-xs font-bold border border-gray-100">
-              <LogIn className="w-4 h-4" /> Log In
-            </Link>
-            <Link to="/register" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold">
-              <UserPlus className="w-4 h-4" /> Sign Up
-            </Link>
+           
+            {userInfo ? (
+              <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+                <User className="w-4 h-4" /> My Account
+              </Link>
+            ) : (
+              <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+                <LogIn className="w-4 h-4" /> Log In
+              </Link>
+            )}
           </div>
 
           <div className="space-y-1">
