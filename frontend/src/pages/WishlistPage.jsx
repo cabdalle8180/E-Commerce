@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Heart, ShoppingCart } from "lucide-react";
 import { fetchWishlist, toggleWishlistItem } from "../Redux/wishlistSlice";
@@ -8,19 +8,12 @@ import { getImageUrl } from "../utils/imageUrl";
 
 function WishlistPage() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.user);
   const { items, loading } = useSelector((state) => state.wishlist);
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-      return;
-    }
     dispatch(fetchWishlist());
-  }, [userInfo, navigate, dispatch]);
-
-  if (!userInfo) return null;
+  }, [dispatch]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">

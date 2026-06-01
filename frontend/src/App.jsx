@@ -10,15 +10,27 @@ import CheckoutPage from "./pages/CheckoutPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import WishlistPage from "./pages/WishlistPage";
+import MyOrdersPage from "./pages/MyOrdersPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { fetchWishlist } from "./Redux/wishlistSlice";
 import { loadCart } from "./Redux/cartSlice";
-import MyOrdersPage from "./pages/MyOrdersPage";
+import { fetchProfile } from "./Redux/userSlice";
+import { getToken } from "./utils/api";
 
 function App() {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (getToken()) {
+      dispatch(fetchProfile());
+      dispatch(fetchWishlist());
+      dispatch(loadCart());
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     if (userInfo?.token) {
@@ -37,11 +49,47 @@ function App() {
           <Route path="/register" element={<Registerpage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/my-orders" element={<MyOrdersPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <ProtectedRoute>
+                <MyOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <WishlistPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
       <Footer />

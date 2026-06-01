@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { apiFetch } from "../utils/api";
+import { apiFetch, getToken } from "../utils/api";
 
 const persistUser = (user, token) => {
   const merged = token ? { ...user, token } : user;
@@ -12,11 +12,12 @@ export const registerUser = createAsyncThunk(
   "user/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(userData),
+            });
       const data = await response.json();
       if (!response.ok) {
         return rejectWithValue(data.message || "Failed to register");
@@ -32,11 +33,12 @@ export const loginUser = createAsyncThunk(
   "user/login",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(userData),
+            });
       const data = await response.json();
       if (!response.ok) {
         return rejectWithValue(data.message || "Failed to login");
@@ -172,7 +174,13 @@ const userSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(fetchProfile.fulfilled, (state, action) => {
-        state.userInfo = persistUser(action.payload, state.userInfo?.token);
+        const token = getToken() || state.userInfo?.token;
+        state.userInfo = persistUser(action.payload, token);
+      })
+      .addCase(fetchProfile.rejected, (state) => {
+        state.userInfo = null;
+        localStorage.removeItem("userInfo");
+        localStorage.removeItem("userToken");
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.userInfo = persistUser(action.payload, state.userInfo?.token);

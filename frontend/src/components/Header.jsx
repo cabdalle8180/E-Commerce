@@ -152,6 +152,19 @@ function Header() {
             </button>
           </div>
 
+          <form onSubmit={handleSearch} className="mb-6 md:hidden">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2.5 px-10 text-xs outline-none"
+              />
+              <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+            </div>
+          </form>
+
           <div className="grid grid-cols-1 gap-3 mb-8">
             {userInfo ? (
               <>

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../Redux/userSlice';
-import heroImage from '../assets/hero.png';
+import HeroBanner from '../components/HeroBanner';
 
 function Registerpage() {
   const dispatch = useDispatch();
@@ -72,18 +72,8 @@ const navigate = useNavigate();
       <div className="flex w-full max-w-[850px] bg-white rounded-[1.5rem] shadow-2xl overflow-hidden border border-gray-50 flex-col md:flex-row max-h-[98vh] md:max-h-[90vh]">
 
         {/* LEFT SIDE */}
-        <div className="hidden md:block w-[35%] relative">
-          <img
-            src={heroImage}
-            alt="Shopping"
-            className="h-full w-full object-cover"
-          />
-
-          <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center p-4 backdrop-blur-[1px]">
-            <h1 className="text-3xl font-black text-white italic tracking-tighter">
-              SOM<span className="text-indigo-200">CART</span>
-            </h1>
-          </div>
+        <div className="hidden md:block w-[35%] relative min-h-[400px]">
+          <HeroBanner className="h-full w-full absolute inset-0" />
         </div>
 
         {/* RIGHT SIDE */}

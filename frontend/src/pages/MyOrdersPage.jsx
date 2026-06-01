@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Package, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { apiFetch } from "../utils/api";
@@ -14,32 +14,30 @@ const STATUS_COLORS = {
 };
 
 function MyOrdersPage() {
-  const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.user);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
 
   const fetchOrders = async () => {
     try {
+      setError("");
       const data = await apiFetch("/api/orders/myorders");
       setOrders(data.orders || []);
-    } catch {
+    } catch (err) {
       setOrders([]);
+      setError(err.message || "Failed to load orders");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-      return;
-    }
     fetchOrders();
-  }, [userInfo, navigate]);
+  }, []);
 
   const handleCancel = async (orderId) => {
     if (!window.confirm("Cancel this order?")) return;
@@ -54,8 +52,6 @@ function MyOrdersPage() {
 
   const filtered =
     filter === "all" ? orders : orders.filter((o) => o.status === filter);
-
-  if (!userInfo) return null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -91,6 +87,9 @@ function MyOrdersPage() {
 
       {message && (
         <p className="mb-4 text-sm text-center text-indigo-600 font-medium">{message}</p>
+      )}
+      {error && (
+        <p className="mb-4 text-sm text-center text-red-500 font-medium">{error}</p>
       )}
 
       {loading && <p className="text-gray-500">Loading orders...</p>}

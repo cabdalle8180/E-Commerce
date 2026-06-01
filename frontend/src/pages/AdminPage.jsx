@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Trash2, Plus, Upload, Pencil, Package, X } from "lucide-react";
 import { apiFetch } from "../utils/api";
@@ -18,7 +17,6 @@ const ORDER_STATUSES = ["pending", "processing", "shipped", "delivered", "cancel
 const PAYMENT_STATUSES = ["pending", "paid", "failed"];
 
 function AdminPage() {
-  const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.user);
   const [tab, setTab] = useState("products");
   const [products, setProducts] = useState([]);
@@ -43,18 +41,10 @@ function AdminPage() {
   };
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-      return;
-    }
-    if (userInfo.role !== "admin") {
-      navigate("/");
-      return;
-    }
     Promise.all([fetchProducts(), fetchOrders()]).catch((err) =>
       setError(err.message)
     );
-  }, [userInfo, navigate]);
+  }, []);
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -173,8 +163,6 @@ function AdminPage() {
     orderFilter === "all"
       ? orders
       : orders.filter((o) => o.status === orderFilter);
-
-  if (!userInfo || userInfo.role !== "admin") return null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">

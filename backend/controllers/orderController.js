@@ -3,6 +3,14 @@ import Product from "../models/product.js";
 import User from "../models/user.js";
 import mongoose from "mongoose";
 
+const restoreOrderStock = async (order) => {
+  for (const item of order.products) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { stock: item.quantity },
+    });
+  }
+};
+
 // 1. CREATE NEW ORDER (Abuurista Dalab Cusub)
 export const createOrder = async (req, res) => {
   try {
@@ -172,11 +180,7 @@ export const cancelOrder = async (req, res) => {
       });
     }
 
-    for (const item of order.products) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: item.quantity },
-      });
-    }
+    await restoreOrderStock(order);
 
     order.status = "cancelled";
     await order.save();
@@ -206,11 +210,7 @@ export const deleteOrder = async (req, res) => {
     }
 
     if (order.status === "pending") {
-      for (const item of order.products) {
-        await Product.findByIdAndUpdate(item.product, {
-          $inc: { stock: item.quantity },
-        });
-      }
+      await restoreOrderStock(order);
     }
 
     await Order.findByIdAndDelete(orderId);
@@ -242,10 +242,13 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Haddii la soo diray status cusub, update garee
+    const previousStatus = order.status;
+
+    if (status === "cancelled" && previousStatus === "pending") {
+      await restoreOrderStock(order);
+    }
+
     if (status) order.status = status;
-    
-    // Haddii la soo diray payment status cusub, update garee
     if (paymentStatus) order.paymentStatus = paymentStatus;
 
     await order.save();

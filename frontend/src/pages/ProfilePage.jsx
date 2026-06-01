@@ -11,6 +11,7 @@ import {
   logoutUser,
 } from "../Redux/userSlice";
 import { clearWishlist } from "../Redux/wishlistSlice";
+import { clearCart } from "../Redux/cartSlice";
 import { apiFetch } from "../utils/api";
 import { getImageUrl } from "../utils/imageUrl";
 
@@ -33,16 +34,11 @@ function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-      return;
-    }
-
     dispatch(fetchProfile());
     apiFetch("/api/orders/myorders")
       .then((data) => setOrderCount((data.orders || []).length))
       .catch(() => setOrderCount(0));
-  }, [userInfo, navigate, dispatch]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (userInfo) {
@@ -63,6 +59,7 @@ function ProfilePage() {
     await dispatch(logoutUser());
     dispatch(clearUserInfo());
     dispatch(clearWishlist());
+    dispatch(clearCart());
     navigate("/login");
   };
 

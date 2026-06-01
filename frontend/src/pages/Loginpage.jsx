@@ -1,17 +1,16 @@
 import { Lock, ArrowRight, AtSign } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../Redux/userSlice';
-import heroImage from '../assets/hero.png';
+import HeroBanner from '../components/HeroBanner';
 
 function Loginpage() {
 
 const navigate = useNavigate();
-  // useEffect
-
-
+  const location = useLocation();
   const dispatch = useDispatch();
+  const from = location.state?.from || '/';
 
   
   const { userInfo, loading, error } = useSelector(
@@ -35,34 +34,22 @@ const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const result = await dispatch(loginUser(formData));
-
-    console.log(result);
+    await dispatch(loginUser(formData));
   };
 
   useEffect(() => {
     if (userInfo) {
-      navigate('/');
+      navigate(from, { replace: true });
     }
-  }, [userInfo, navigate]);
+  }, [userInfo, navigate, from]);
 
   return (
     <div className="flex items-center justify-center bg-gray-100 p-3 md:p-6 font-sans ">
       <div className="flex w-full max-w-[850px] bg-white rounded-[1.5rem] shadow-2xl overflow-hidden border border-gray-50 flex-col md:flex-row max-h-[95vh]">
 
         {/* LEFT SIDE */}
-        <div className="hidden md:block w-[35%] relative">
-          <img
-            src={heroImage}
-            alt="SomCart Shopping"
-            className="h-full w-full object-cover"
-          />
-
-          <div className="absolute inset-0 bg-indigo-900/40 flex items-center justify-center p-4 backdrop-blur-[1px]">
-            <h1 className="text-3xl font-black text-white italic tracking-tighter">
-              SOM<span className="text-indigo-200">CART</span>
-            </h1>
-          </div>
+        <div className="hidden md:block w-[35%] relative min-h-[400px]">
+          <HeroBanner className="h-full w-full absolute inset-0" />
         </div>
 
         {/* RIGHT SIDE */}
@@ -105,18 +92,9 @@ const navigate = useNavigate();
             {/* Password */}
             <div className="space-y-1.5 group">
 
-              <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">
-                  Password
-                </label>
-
-                <a
-                  href="#"
-                  className="text-[10px] text-indigo-600 font-bold hover:underline tracking-tight"
-                >
-                  Forgot password?
-                </a>
-              </div>
+              <label className="text-[10px] font-bold text-gray-400 uppercase px-1 block">
+                Password
+              </label>
 
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-300 group-focus-within:text-indigo-500 transition-colors" />
@@ -181,9 +159,6 @@ const navigate = useNavigate();
 }
 
 export default Loginpage;
-
-
-
 
 
 

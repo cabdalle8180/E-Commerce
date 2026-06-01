@@ -195,7 +195,15 @@ const cartSlice = createSlice({
       .addCase(clearCart.fulfilled, (state, action) => {
         state.items = action.payload;
         state.loading = false;
-      });
+      })
+      .addMatcher(
+        (action) =>
+          action.type.startsWith("cart/") && action.type.endsWith("/rejected"),
+        (state, action) => {
+          state.loading = false;
+          state.error = action.payload || action.error?.message;
+        }
+      );
   },
 });
 

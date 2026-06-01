@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../utils/api";
 import ProductCard from "../components/ProductCard";
-import heroImage from "../assets/hero.png";
+import HeroBanner from "../components/HeroBanner";
 
 const CATEGORIES = ["all", "electronics", "fashion", "general"];
 
@@ -63,12 +63,8 @@ function Homepage() {
               Shop Now
             </Link>
           </div>
-          <div className="hidden md:block">
-            <img
-              src={heroImage}
-              alt="Shopping"
-              className="rounded-2xl shadow-2xl w-full max-h-80 object-cover"
-            />
+          <div className="hidden md:block rounded-2xl shadow-2xl overflow-hidden max-h-80">
+            <HeroBanner className="h-80 w-full" />
           </div>
         </div>
       </section>

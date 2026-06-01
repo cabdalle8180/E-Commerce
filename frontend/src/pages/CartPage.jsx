@@ -15,7 +15,7 @@ function CartPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.user);
-  const { items, loading } = useSelector((state) => state.cart);
+  const { items, loading, error } = useSelector((state) => state.cart);
   const total = useSelector(selectCartTotal);
 
   useEffect(() => {
@@ -83,6 +83,7 @@ function CartPage() {
       </div>
 
       {loading && <p className="text-gray-500 text-sm mb-4">Syncing cart...</p>}
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       <div className="space-y-4 mb-8">
         {items.map((item) => (

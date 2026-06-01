@@ -87,6 +87,10 @@ export const getProductById = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    if (!product.isActive) {
+      return res.status(404).json({ message: "Product is not available" });
+    }
+
     return res.status(200).json({
       message: "Product fetched successfully",
       product,

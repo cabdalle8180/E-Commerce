@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function Footer() {
+  const { userInfo } = useSelector((state) => state.user);
+
   return (
     <footer className="bg-gray-900 text-gray-400 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-3 gap-8">
@@ -19,16 +22,29 @@ function Footer() {
             <li><Link to="/?category=fashion" className="hover:text-white transition-colors">Fashion</Link></li>
             <li><Link to="/?category=electronics" className="hover:text-white transition-colors">Electronics</Link></li>
             <li><Link to="/cart" className="hover:text-white transition-colors">Manage Cart</Link></li>
-            <li><Link to="/my-orders" className="hover:text-white transition-colors">My Orders</Link></li>
+            {userInfo && (
+              <li><Link to="/my-orders" className="hover:text-white transition-colors">My Orders</Link></li>
+            )}
           </ul>
         </div>
         <div>
           <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-4">Account</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/login" className="hover:text-white transition-colors">Login</Link></li>
-            <li><Link to="/register" className="hover:text-white transition-colors">Register</Link></li>
-            <li><Link to="/profile" className="hover:text-white transition-colors">My Account</Link></li>
-            <li><Link to="/wishlist" className="hover:text-white transition-colors">Wishlist</Link></li>
+            {userInfo ? (
+              <>
+                <li><Link to="/profile" className="hover:text-white transition-colors">My Account</Link></li>
+                <li><Link to="/wishlist" className="hover:text-white transition-colors">Wishlist</Link></li>
+                <li><Link to="/my-orders" className="hover:text-white transition-colors">My Orders</Link></li>
+                {userInfo.role === "admin" && (
+                  <li><Link to="/admin" className="hover:text-white transition-colors">Admin Dashboard</Link></li>
+                )}
+              </>
+            ) : (
+              <>
+                <li><Link to="/login" className="hover:text-white transition-colors">Login</Link></li>
+                <li><Link to="/register" className="hover:text-white transition-colors">Register</Link></li>
+              </>
+            )}
           </ul>
         </div>
       </div>
