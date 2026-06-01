@@ -1,9 +1,9 @@
 import { User, Mail, Lock, ArrowRight, AtSign } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useState , useEffect} from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../Redux/userSlice';
-import {  useNavigate } from 'react-router-dom';
+import heroImage from '../assets/hero.png';
 
 function Registerpage() {
   const dispatch = useDispatch();
@@ -48,9 +48,17 @@ const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const result = await dispatch(registerUser(formData));
+    const payload = {
+      ...formData,
+      address: {
+        country: formData.address.country,
+        city: formData.address.city,
+        district: formData.address.state,
+        street: formData.address.street,
+      },
+    };
 
-    console.log(result);
+    await dispatch(registerUser(payload));
   };
 
     useEffect(() => {
@@ -66,7 +74,7 @@ const navigate = useNavigate();
         {/* LEFT SIDE */}
         <div className="hidden md:block w-[35%] relative">
           <img
-            src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=1000"
+            src={heroImage}
             alt="Shopping"
             className="h-full w-full object-cover"
           />

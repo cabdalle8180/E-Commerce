@@ -1,9 +1,9 @@
 import { Lock, ArrowRight, AtSign } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useState , useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../Redux/userSlice';
-import { useNavigate } from 'react-router-dom';
+import heroImage from '../assets/hero.png';
 
 function Loginpage() {
 
@@ -53,7 +53,7 @@ const navigate = useNavigate();
         {/* LEFT SIDE */}
         <div className="hidden md:block w-[35%] relative">
           <img
-            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
+            src={heroImage}
             alt="SomCart Shopping"
             className="h-full w-full object-cover"
           />

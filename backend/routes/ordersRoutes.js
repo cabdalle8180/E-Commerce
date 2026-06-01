@@ -5,20 +5,17 @@ import {
   getMyOrders,
   getOrderById,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
 } from "../controllers/orderController.js";
 
 const router = Router();
 
-// Dhamaan routes-ka hoose waxay u baahan yihiin login (protectRoutes)
-router.use(protectRoutes); 
+router.use(protectRoutes);
 
-router.post("/", createOrder);         // User-ka caadiga ah
-router.get("/myorders", getMyOrders);   // User-ka caadiga ah
-router.get("/:id", getOrderById);       // User-ka iska leh ama Admin
-
-// Routes-kan hoose waxaa geli kara Admin kaliya
-router.get("/", adminCheck, getAllOrders);
+router.post("/", createOrder);
+router.get("/myorders", getMyOrders);
+router.get("/admin/all", adminCheck, getAllOrders);
 router.put("/:id/status", adminCheck, updateOrderStatus);
+router.get("/:id", getOrderById);
 
 export default router;

@@ -101,7 +101,7 @@ export const getOrderById = async (req, res) => {
 
     // Soo qaad order-ka, ku dar magaca iyo email-ka user-ka soo iibsaday iyo macluumaadka alaabta
     const order = await Order.findById(orderId)
-      .populate("user", "name email")
+      .populate("user", "fullName username email")
       .populate("products.product", "name image");
 
     if (!order) {
@@ -127,7 +127,8 @@ export const getOrderById = async (req, res) => {
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("user", "name email")
+      .populate("user", "fullName username email")
+      .populate("products.product", "name image price")
       .sort("-createdAt");
 
     return res.status(200).json({

@@ -1,27 +1,40 @@
 import Product from "../models/product.js";
-import mongoose from "mongoose"; // Waxaa loo soo qaatay in lagu hubiyo ID-ga
+import mongoose from "mongoose";
+import { deleteProductImage } from "../utils/fileHelpers.js";
+
+const getImagePath = (req) => {
+  if (req.file) {
+    return `/uploads/products/${req.file.filename}`;
+  }
+  return req.body.image || "";
+};
 
 // 1. CREATE PRODUCT
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, image, category, stock, isActive } = req.body;
+    const { name, description, price, category, stock, isActive } = req.body;
+    const image = getImagePath(req);
 
-    // validation
-    if (!name || !description || !price || !image || !category) {
+    if (!name || !description || price === undefined || !category) {
       return res.status(400).json({
         message: "Please fill all required fields",
       });
     }
 
-    // create and save product (Habka ugu gaaban)
+    if (!image) {
+      return res.status(400).json({
+        message: "Product image is required",
+      });
+    }
+
     const newProduct = await Product.create({
       name,
       description,
-      price,
+      price: Number(price),
       image,
       category,
-      stock,
-      isActive,
+      stock: stock !== undefined ? Number(stock) : 0,
+      isActive: isActive !== undefined ? isActive === "true" || isActive === true : true,
     });
 
     return res.status(201).json({
@@ -37,7 +50,18 @@ export const createProduct = async (req, res) => {
 // 2. GET ALL PRODUCTS
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const filter = {};
+    if (req.query.category) {
+      filter.category = req.query.category;
+    }
+    if (req.query.search) {
+      filter.name = { $regex: req.query.search, $options: "i" };
+    }
+    if (req.query.active !== "false") {
+      filter.isActive = true;
+    }
+
+    const products = await Product.find(filter).sort("-createdAt");
     return res.status(200).json({
       message: "Products fetched successfully",
       products,
@@ -53,7 +77,6 @@ export const getProductById = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Hubi haddii ID-gu uusan sax ahayn (ku haboonayn MongoDB)
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: "Invalid Product ID format" });
     }
@@ -78,22 +101,32 @@ export const getProductById = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    const updates = req.body;
 
-    // Hubi ID-ga
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: "Invalid Product ID format" });
     }
 
-    // runValidators: true waxay hubisaa in xogta cusub ay raacayso shuruudiha Model-ka
-    const product = await Product.findByIdAndUpdate(productId, updates, { 
-      new: true, 
-      runValidators: true 
-    });
-
-    if (!product) {
+    const existing = await Product.findById(productId);
+    if (!existing) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    const updates = { ...req.body };
+    if (updates.price !== undefined) updates.price = Number(updates.price);
+    if (updates.stock !== undefined) updates.stock = Number(updates.stock);
+    if (updates.isActive !== undefined) {
+      updates.isActive = updates.isActive === "true" || updates.isActive === true;
+    }
+
+    if (req.file) {
+      deleteProductImage(existing.image);
+      updates.image = `/uploads/products/${req.file.filename}`;
+    }
+
+    const product = await Product.findByIdAndUpdate(productId, updates, {
+      new: true,
+      runValidators: true,
+    });
 
     return res.status(200).json({
       message: "Product updated successfully",
@@ -110,7 +143,6 @@ export const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Hubi ID-ga
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: "Invalid Product ID format" });
     }
@@ -120,6 +152,8 @@ export const deleteProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    deleteProductImage(product.image);
 
     return res.status(200).json({
       message: "Product deleted successfully",
