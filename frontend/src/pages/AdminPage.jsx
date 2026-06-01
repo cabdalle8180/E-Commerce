@@ -30,6 +30,7 @@ function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [orderFilter, setOrderFilter] = useState("all");
 
   const fetchProducts = async () => {
     const data = await apiFetch("/api/products?active=false");
@@ -157,6 +158,22 @@ function AdminPage() {
     }
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm("Delete this order permanently?")) return;
+    try {
+      await apiFetch(`/api/orders/${orderId}`, { method: "DELETE" });
+      await fetchOrders();
+      setMessage("Order deleted.");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const filteredOrders =
+    orderFilter === "all"
+      ? orders
+      : orders.filter((o) => o.status === orderFilter);
+
   if (!userInfo || userInfo.role !== "admin") return null;
 
   return (
@@ -272,9 +289,26 @@ function AdminPage() {
       )}
 
       {tab === "orders" && (
-        <div className="space-y-4">
-          {orders.length === 0 && <p className="text-gray-500">No orders yet.</p>}
-          {orders.map((order) => (
+        <div>
+          <h2 className="font-bold text-gray-900 mb-4">Manage All Orders</h2>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {["all", ...ORDER_STATUSES].map((s) => (
+              <button
+                key={s}
+                onClick={() => setOrderFilter(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase ${
+                  orderFilter === s
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <div className="space-y-4">
+          {filteredOrders.length === 0 && <p className="text-gray-500">No orders found.</p>}
+          {filteredOrders.map((order) => (
             <div key={order._id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
               <div className="flex flex-wrap justify-between gap-3 mb-4">
                 <div>
@@ -331,8 +365,15 @@ function AdminPage() {
                   {order.shippingAddress.district || ""} {order.shippingAddress.country}
                 </p>
               )}
+              <button
+                onClick={() => handleDeleteOrder(order._id)}
+                className="mt-3 flex items-center gap-1 text-red-600 text-xs font-bold hover:underline"
+              >
+                <Trash2 className="w-3 h-3" /> Delete order
+              </button>
             </div>
           ))}
+          </div>
         </div>
       )}
     </div>

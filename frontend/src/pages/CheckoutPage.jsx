@@ -63,8 +63,8 @@ function CheckoutPage() {
           shippingAddress: shipping,
         }),
       });
-      dispatch(clearCart());
-      navigate("/profile");
+      await dispatch(clearCart()).unwrap();
+      navigate("/my-orders");
     } catch (err) {
       setError(err.message);
     } finally {

@@ -1,5 +1,6 @@
 import Order from "../models/order.js";
-import Product from "../models/product.js"; // Waxaa loo baahan yahay in lagu hubiyo stock-ga iyo qiimaha
+import Product from "../models/product.js";
+import User from "../models/user.js";
 import mongoose from "mongoose";
 
 // 1. CREATE NEW ORDER (Abuurista Dalab Cusub)
@@ -57,6 +58,11 @@ export const createOrder = async (req, res) => {
       products: orderProducts,
       totalPrice,
       shippingAddress,
+    });
+
+    await User.findByIdAndUpdate(userId, {
+      $push: { orders: newOrder._id },
+      cart: [],
     });
 
     return res.status(201).json({
@@ -141,7 +147,86 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-// 5. UPDATE ORDER STATUS (Admin Only - Bedelida heerka dalabka)
+// 5. CANCEL ORDER (User — pending only)
+export const cancelOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ message: "Invalid Order ID format" });
+    }
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    if (order.status !== "pending") {
+      return res.status(400).json({
+        message: "Only pending orders can be cancelled",
+      });
+    }
+
+    for (const item of order.products) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity },
+      });
+    }
+
+    order.status = "cancelled";
+    await order.save();
+
+    return res.status(200).json({
+      message: "Order cancelled successfully",
+      order,
+    });
+  } catch (error) {
+    console.error("CANCEL ORDER ERROR:", error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// 6. DELETE ORDER (Admin only)
+export const deleteOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ message: "Invalid Order ID format" });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status === "pending") {
+      for (const item of order.products) {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: item.quantity },
+        });
+      }
+    }
+
+    await Order.findByIdAndDelete(orderId);
+    await User.updateMany(
+      { orders: orderId },
+      { $pull: { orders: orderId } }
+    );
+
+    return res.status(200).json({ message: "Order deleted successfully" });
+  } catch (error) {
+    console.error("DELETE ORDER ERROR:", error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// 7. UPDATE ORDER STATUS (Admin Only)
 export const updateOrderStatus = async (req, res) => {
   try {
     const orderId = req.params.id;

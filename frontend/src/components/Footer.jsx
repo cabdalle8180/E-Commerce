@@ -18,7 +18,8 @@ function Footer() {
             <li><Link to="/" className="hover:text-white transition-colors">All Products</Link></li>
             <li><Link to="/?category=fashion" className="hover:text-white transition-colors">Fashion</Link></li>
             <li><Link to="/?category=electronics" className="hover:text-white transition-colors">Electronics</Link></li>
-            <li><Link to="/cart" className="hover:text-white transition-colors">Cart</Link></li>
+            <li><Link to="/cart" className="hover:text-white transition-colors">Manage Cart</Link></li>
+            <li><Link to="/my-orders" className="hover:text-white transition-colors">My Orders</Link></li>
           </ul>
         </div>
         <div>

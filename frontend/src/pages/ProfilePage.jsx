@@ -18,8 +18,7 @@ function ProfilePage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { userInfo, error, passwordMessage } = useSelector((state) => state.user);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [orderCount, setOrderCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [profileForm, setProfileForm] = useState({
@@ -41,9 +40,8 @@ function ProfilePage() {
 
     dispatch(fetchProfile());
     apiFetch("/api/orders/myorders")
-      .then((data) => setOrders(data.orders || []))
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
+      .then((data) => setOrderCount((data.orders || []).length))
+      .catch(() => setOrderCount(0));
   }, [userInfo, navigate, dispatch]);
 
   useEffect(() => {
@@ -233,42 +231,25 @@ function ProfilePage() {
         </button>
       </form>
 
-      <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-        <Package className="w-5 h-5 text-indigo-600" /> My Orders
-      </h2>
-
-      {loading && <p className="text-gray-500">Loading orders...</p>}
-      {!loading && orders.length === 0 && <p className="text-gray-500 text-sm">No orders yet.</p>}
-
-      <div className="space-y-4">
-        {orders.map((order) => (
-          <div key={order._id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</p>
-                <p className="font-black text-indigo-600">${order.totalPrice.toFixed(2)}</p>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold uppercase bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg block mb-1">
-                  {order.status}
-                </span>
-                <span className="text-[10px] font-bold uppercase bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">
-                  {order.paymentStatus}
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {order.products?.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-xs text-gray-600">
-                  {item.product?.image && (
-                    <img src={getImageUrl(item.product.image)} alt="" className="w-8 h-8 rounded object-cover" />
-                  )}
-                  <span>{item.product?.name || "Product"} × {item.quantity}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Link
+          to="/cart"
+          className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:border-indigo-200 transition-colors"
+        >
+          <h3 className="font-bold text-gray-900 mb-1">Manage Cart</h3>
+          <p className="text-sm text-gray-500">Update quantities or remove items</p>
+        </Link>
+        <Link
+          to="/my-orders"
+          className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:border-indigo-200 transition-colors"
+        >
+          <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
+            <Package className="w-5 h-5 text-indigo-600" /> My Orders
+          </h3>
+          <p className="text-sm text-gray-500">
+            {orderCount > 0 ? `${orderCount} order(s)` : "View and manage your orders"}
+          </p>
+        </Link>
       </div>
     </div>
   );

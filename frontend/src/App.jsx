@@ -13,6 +13,8 @@ import WishlistPage from "./pages/WishlistPage";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { fetchWishlist } from "./Redux/wishlistSlice";
+import { loadCart } from "./Redux/cartSlice";
+import MyOrdersPage from "./pages/MyOrdersPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -21,6 +23,7 @@ function App() {
   useEffect(() => {
     if (userInfo?.token) {
       dispatch(fetchWishlist());
+      dispatch(loadCart());
     }
   }, [userInfo?.id, dispatch]);
 
@@ -35,6 +38,7 @@ function App() {
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/my-orders" element={<MyOrdersPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/admin" element={<AdminPage />} />

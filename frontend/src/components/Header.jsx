@@ -1,4 +1,4 @@
-import { ShoppingCart, Search, Menu, Heart, X, LogIn, User, Shield } from "lucide-react";
+import { ShoppingCart, Search, Menu, Heart, X, LogIn, User, Shield, Package } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -60,6 +60,12 @@ function Header() {
             <div className="hidden lg:flex items-center border-r pr-6 gap-4">
               {userInfo ? (
                 <>
+                  <Link
+                    to="/my-orders"
+                    className="flex items-center gap-2 py-2 px-3 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-50"
+                  >
+                    <Package className="w-4 h-4" /> Orders
+                  </Link>
                   {userInfo.role === "admin" && (
                     <Link
                       to="/admin"
@@ -149,6 +155,13 @@ function Header() {
           <div className="grid grid-cols-1 gap-3 mb-8">
             {userInfo ? (
               <>
+                <Link
+                  to="/my-orders"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center gap-2 py-3 border border-indigo-600 text-indigo-600 rounded-xl text-xs font-bold"
+                >
+                  <Package className="w-4 h-4" /> My Orders
+                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setIsOpen(false)}
