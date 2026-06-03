@@ -1,24 +1,35 @@
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../Redux/cartSlice";
 import { getImageUrl } from "../utils/imageUrl";
 import WishlistButton from "./WishlistButton";
+import { formatPrice, LANGUAGES } from "../utils/currency";
+import { addToCollabCart } from "../Redux/collabSlice";
 
 function ProductCard({ product }) {
   const dispatch = useDispatch();
 
+  const { activeSession, currency, language } = useSelector((state) => state.collab);
+  const currentLang = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
+
   const handleAddToCart = (e) => {
     e.preventDefault();
     if (product.stock > 0) {
-      dispatch(addToCart({ product, quantity: 1 }));
+      if (activeSession) {
+        dispatch(addToCollabCart({ productId: product._id, quantity: 1, flag: currentLang.flag }));
+      } else {
+        dispatch(addToCart({ product, quantity: 1 }));
+      }
     }
   };
 
   return (
     <Link
       to={`/product/${product._id}`}
-      className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all relative"
+      className={`group bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-lg transition-all relative ${
+        activeSession ? "border-indigo-100 hover:border-indigo-200" : "border-gray-100"
+      }`}
     >
       <div className="absolute top-2 right-2 z-10">
         <WishlistButton productId={product._id} className="bg-white/90 shadow-sm" />
@@ -36,12 +47,18 @@ function ProductCard({ product }) {
         </p>
         <h3 className="font-bold text-gray-900 text-sm line-clamp-2 mb-2">{product.name}</h3>
         <div className="flex items-center justify-between">
-          <span className="text-lg font-black text-indigo-600">${product.price.toFixed(2)}</span>
+          <span className="text-lg font-black text-indigo-600">
+            {formatPrice(product.price, currency)}
+          </span>
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            title="Add to cart"
+            className={`p-2 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-white ${
+              activeSession
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-gray-900 hover:bg-black"
+            }`}
+            title={activeSession ? "Add to Group Cart" : "Add to cart"}
           >
             <ShoppingCart className="w-4 h-4" />
           </button>

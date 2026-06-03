@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, ArrowLeft } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { apiFetch } from "../utils/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { addToCart } from "../Redux/cartSlice";
 import WishlistButton from "../components/WishlistButton";
+import { formatPrice, LANGUAGES } from "../utils/currency";
+import { addToCollabCart, updateCollabStep } from "../Redux/collabSlice";
 
 function ProductDetailPage() {
   const { id } = useParams();
@@ -16,12 +18,19 @@ function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { activeSession, currency, language } = useSelector((state) => state.collab);
+  const currentLang = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
         const data = await apiFetch(`/api/products/${id}`);
         setProduct(data.product);
+
+        if (activeSession) {
+          dispatch(updateCollabStep(`Viewing: ${data.product.name}`));
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -29,10 +38,20 @@ function ProductDetailPage() {
       }
     };
     fetchProduct();
-  }, [id]);
+
+    return () => {
+      if (activeSession) {
+        dispatch(updateCollabStep("Browsing Products"));
+      }
+    };
+  }, [id, activeSession, dispatch]);
 
   const handleAddToCart = () => {
-    dispatch(addToCart({ product, quantity }));
+    if (activeSession) {
+      dispatch(addToCollabCart({ productId: product._id, quantity, flag: currentLang.flag }));
+    } else {
+      dispatch(addToCart({ product, quantity }));
+    }
     navigate("/cart");
   };
 
@@ -69,7 +88,7 @@ function ProductDetailPage() {
             <WishlistButton productId={product._id} />
           </div>
           <p className="text-3xl font-black text-indigo-600 mb-6">
-            ${product.price.toFixed(2)}
+            {formatPrice(product.price, currency)}
           </p>
           <p className="text-gray-600 text-sm leading-relaxed mb-6">
             {product.description}
@@ -95,10 +114,14 @@ function ProductDetailPage() {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-indigo-700 disabled:opacity-40 transition-colors"
+            className={`w-full md:w-auto flex items-center justify-center gap-2 text-white font-bold py-3 px-8 rounded-xl disabled:opacity-40 transition-colors ${
+              activeSession
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-gray-900 hover:bg-black"
+            }`}
           >
             <ShoppingCart className="w-5 h-5" />
-            Add to Cart
+            {activeSession ? "Add to Group Cart" : "Add to Cart"}
           </button>
         </div>
       </div>

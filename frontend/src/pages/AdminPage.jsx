@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Trash2, Plus, Upload, Pencil, Package, X } from "lucide-react";
+import { Trash2, Plus, Upload, Pencil, Package, X, Users, Globe, Activity } from "lucide-react";
 import { apiFetch } from "../utils/api";
 import { getImageUrl } from "../utils/imageUrl";
 
@@ -21,6 +21,7 @@ function AdminPage() {
   const [tab, setTab] = useState("products");
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [collabSessions, setCollabSessions] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -40,11 +41,29 @@ function AdminPage() {
     setOrders(data.orders || []);
   };
 
+  const fetchCollabSessions = async () => {
+    try {
+      const data = await apiFetch("/api/collaboration/admin/active");
+      setCollabSessions(data.sessions || []);
+    } catch (err) {
+      console.error("Collab Fetch Error:", err.message);
+    }
+  };
+
   useEffect(() => {
-    Promise.all([fetchProducts(), fetchOrders()]).catch((err) =>
+    Promise.all([fetchProducts(), fetchOrders(), fetchCollabSessions()]).catch((err) =>
       setError(err.message)
     );
   }, []);
+
+  useEffect(() => {
+    let interval;
+    if (tab === "live") {
+      fetchCollabSessions();
+      interval = setInterval(fetchCollabSessions, 4000);
+    }
+    return () => clearInterval(interval);
+  }, [tab]);
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -184,6 +203,14 @@ function AdminPage() {
           }`}
         >
           <Package className="w-4 h-4" /> Orders ({orders.length})
+        </button>
+        <button
+          onClick={() => setTab("live")}
+          className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${
+            tab === "live" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          <Users className="w-4 h-4" /> Live Groups ({collabSessions.length})
         </button>
       </div>
 
@@ -361,6 +388,82 @@ function AdminPage() {
               </button>
             </div>
           ))}
+          </div>
+        </div>
+      )}
+
+      {tab === "live" && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
+            <Activity className="w-6 h-6 text-indigo-600 animate-pulse" />
+            <div>
+              <h2 className="font-black text-gray-900 text-base">Live Activity Dashboard</h2>
+              <p className="text-xs text-indigo-600 font-bold">Monitor real-time cooperative shopping groups and customer steps.</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {collabSessions.length === 0 ? (
+              <p className="text-gray-500 text-sm">No active collaborative shopping sessions right now.</p>
+            ) : (
+              collabSessions.map((session) => (
+                <div key={session._id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <div>
+                      <span className="text-[10px] text-gray-400 font-bold uppercase block">Group Code</span>
+                      <span className="font-black text-indigo-600 tracking-wider text-sm">{session.sessionCode}</span>
+                    </div>
+                    <span className="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
+                      {session.members?.length} Active Members
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Members & Step Tracking</h3>
+                    <div className="space-y-2">
+                      {session.members?.map((member, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100/50">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">{member.flag}</span>
+                            <div>
+                              <p className="font-bold text-xs text-gray-900">{member.fullName || member.username}</p>
+                              <p className="text-[10px] text-gray-400 font-medium">@{member.username}</p>
+                            </div>
+                          </div>
+                          <span className="bg-indigo-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg">
+                            {member.activeStep}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Shared Shopping Cart</h3>
+                    {session.cartItems?.length === 0 ? (
+                      <p className="text-xs text-gray-400 italic">Group cart is empty</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {session.cartItems?.map((item, idx) => (
+                          <div key={idx} className="flex justify-between items-center text-xs bg-gray-50/50 px-3 py-2 rounded-lg">
+                            <span className="font-bold text-gray-700">{item.product?.name} × {item.quantity}</span>
+                            <span className="text-indigo-600 font-black">
+                              ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                        <div className="flex justify-between items-center font-black text-indigo-600 border-t pt-2 mt-2">
+                          <span>Group Total:</span>
+                          <span>
+                            ${session.cartItems.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

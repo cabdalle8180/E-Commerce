@@ -3,10 +3,13 @@ import { Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../utils/api";
 import ProductCard from "../components/ProductCard";
 import HeroBanner from "../components/HeroBanner";
+import { useSelector, useDispatch } from "react-redux";
+import { updateCollabStep } from "../Redux/collabSlice";
 
 const CATEGORIES = ["all", "electronics", "fashion", "general"];
 
 function Homepage() {
+  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,10 +17,18 @@ function Homepage() {
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [category, setCategory] = useState(searchParams.get("category") || "all");
 
+  const { activeSession } = useSelector((state) => state.collab);
+
   useEffect(() => {
     setSearch(searchParams.get("search") || "");
     setCategory(searchParams.get("category") || "all");
   }, [searchParams]);
+
+  useEffect(() => {
+    if (activeSession) {
+      dispatch(updateCollabStep("Browsing Products"));
+    }
+  }, [activeSession, dispatch]);
 
   useEffect(() => {
     const fetchProducts = async () => {
